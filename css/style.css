@@ -301,3 +301,51 @@ h1{font-size:clamp(30px,4.8vw,68px);line-height:1;letter-spacing:-.045em;font-we
 @keyframes ping{0%{transform:scale(.2);opacity:.6}100%{transform:scale(2.6);opacity:0}}
 #wipe.in{transition:transform .8s cubic-bezier(.7,0,.2,1)}
 #wipe.out{transition:transform .95s cubic-bezier(.7,0,.2,1)}
+
+/* ===== VISUAL UPGRADE ===== */
+/* 3D hero */
+#gl{position:absolute;inset:0;width:100%!important;height:100%!important;opacity:0;transition:opacity 1.6s var(--ease) .4s}
+.ready #gl{opacity:1}
+.hero .grid{opacity:.45}
+@media(max-width:1000px){#gl{opacity:.35!important}}
+
+/* portrait */
+.ab{display:block}
+.has-me .ab{display:grid;grid-template-columns:300px minmax(0,1fr);gap:56px;align-items:start}
+.me{position:relative;perspective:900px}
+.me-in{position:relative;aspect-ratio:4/5;border-radius:22px;overflow:hidden;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .5s var(--ease);box-shadow:0 30px 60px -25px rgba(16,17,20,.45)}
+.me img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.1);transform:scale(1.06);transition:filter .7s var(--ease),transform .9s var(--ease)}
+.me-in::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,90,31,.55),rgba(16,17,20,.25));mix-blend-mode:multiply;transition:opacity .7s var(--ease)}
+.me:hover img{filter:none;transform:scale(1)}
+.me:hover .me-in::after{opacity:0}
+.me-scan{position:absolute;left:0;right:0;top:0;height:2px;background:var(--ac);box-shadow:0 0 18px 4px rgba(255,90,31,.6);z-index:2;animation:mescan 3.6s ease-in-out infinite}
+@keyframes mescan{0%,100%{transform:translateY(0)}50%{transform:translateY(calc(min(300px,80vw)*1.25 - 2px))}}
+.me figcaption{display:flex;justify-content:space-between;margin-top:12px;font:500 11px 'Geist Mono',monospace;letter-spacing:.12em;color:var(--mute)}
+.me figcaption span:first-child{color:var(--ac)}
+@media(max-width:900px){.has-me .ab{grid-template-columns:1fr;gap:36px}.me{max-width:300px}}
+
+/* showreel */
+.reel{padding:150px 0 120px;background:var(--bg);border-radius:44px 44px 0 0;margin-top:-44px;z-index:2}
+.rsub{color:var(--mute);margin:-24px 0 40px;max-width:520px}
+.rv{position:relative;margin:0 auto;width:calc(100% - 56px);max-width:1400px;aspect-ratio:16/9;border-radius:28px;overflow:hidden;background:var(--d)}
+.rv video{width:100%;height:100%;object-fit:cover;display:block}
+.rbtn{position:absolute;left:24px;bottom:24px;border:1px solid rgba(255,255,255,.35);background:rgba(14,15,18,.45);backdrop-filter:blur(10px);color:#fff;font:500 12px 'Geist Mono',monospace;letter-spacing:.08em;padding:9px 16px;border-radius:99px;cursor:pointer;transition:background .25s}
+.rbtn:hover{background:var(--ac);border-color:var(--ac)}
+
+/* project covers: the animated sketch becomes a framed panel, a real image replaces it */
+.viz,.cover{height:170px;margin:4px 0 0;border:1px solid var(--dline);border-radius:12px;overflow:hidden;position:relative;
+  background:radial-gradient(120% 90% at 85% 0%,rgba(255,90,31,.16),transparent 60%),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px) 0 0/100% 22px,#0b0c0f}
+.viz{padding:22px 20px;display:grid;place-items:center}
+.viz::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,122,69,.09),transparent);transform:translateX(-100%);animation:sheen 4.5s ease-in-out infinite}
+@keyframes sheen{60%,100%{transform:translateX(100%)}}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.08);transition:transform 1s var(--ease),filter .6s;filter:saturate(.85)}
+.pj:hover .cover img{transform:scale(1);filter:none}
+.pj:hover .viz,.pj:hover .cover{border-color:#4a3a33}
+@media(max-height:760px){.viz,.cover{display:block;height:110px}.viz{display:grid}}
+
+/* big outlined marquee above footer */
+.bigmq{overflow:hidden;padding:30px 0 10px;border-top:1px solid var(--line)}
+.bigmq div{display:flex;width:max-content;animation:mq 26s linear infinite}
+.bigmq span{font:700 clamp(56px,10vw,150px)/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.05em;padding-right:.5em;color:transparent;-webkit-text-stroke:1.5px var(--ink);transition:color .4s}
+.bigmq span::after{content:"\2726";color:var(--ac);-webkit-text-stroke:0;margin-left:.5em;font-size:.5em;vertical-align:middle}
+.bigmq:hover span{color:var(--ac);-webkit-text-stroke-color:var(--ac)}
