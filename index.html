@@ -21,7 +21,7 @@
 <header class="hd">
   <a class="logo" href="#top" aria-label="Abhaya Chand, back to top">AC<i></i></a>
   <nav aria-label="Main">
-    <a href="#about">About</a><a href="#work">Work</a><a href="#journey">Journey</a><a href="#results">Results</a><a href="#terminal">Terminal</a><a href="#contact">Contact</a>
+    <a href="#about">About</a><a href="#reel" hidden>Reel</a><a href="#work">Work</a><a href="#journey">Journey</a><a href="#results">Results</a><a href="#terminal">Terminal</a><a href="#contact">Contact</a>
   </nav>
   <span class="clock" id="clock" aria-label="Local time in Kathmandu"></span>
 </header>
@@ -62,8 +62,18 @@
 
 <section id="about" class="about"><div class="wrap">
   <h2 class="line"><span>About</span></h2>
+  <div class="ab">
+  <figure class="me" id="me" data-src="img/me.jpg" hidden><div class="me-in"><i class="me-scan"></i></div><figcaption><span>EXHIBIT A</span><span>Abhaya Chand</span></figcaption></figure>
   <p class="scrub" id="scrub">I'm a cybersecurity student who would rather find out how something actually works than accept an explanation at face value. I learn by testing, breaking and debugging, then working out why. Digital forensics is my strongest area, backed by a real malware case, podium finishes in CTFs and web application testing. I lead the blue team at my college's Cyber Security Club and I explain findings to people who aren't technical.</p>
+  </div>
 </div></section>
+
+<section id="reel" class="reel" hidden><div class="wrap">
+  <h2 class="line"><span>Showreel</span></h2>
+  <p class="rsub">Real work, recorded: investigations, tooling and lab sessions. Double-click for fullscreen.</p>
+</div>
+  <div class="rv"><video muted loop playsinline preload="metadata" poster="media/reel.jpg"><source src="media/reel.mp4" type="video/mp4"></video><button class="rbtn" data-mag>Pause</button></div>
+</section>
 
 <section id="work" class="work">
   <div class="pin">
@@ -172,6 +182,7 @@
 </div></section>
 </main>
 
+<div class="bigmq" aria-hidden="true"><div><span>Let's work together</span><span>Let's work together</span><span>Let's work together</span><span>Let's work together</span></div></div>
 <footer class="ft"><div class="wrap"><span>&copy; 2026 Abhaya Chand. Kathmandu, Nepal.</span><span>Offensive work shown here was done in labs or on systems I own.</span></div></footer>
 <button id="up" aria-label="Back to top"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" id="upc"/></svg><b>&uarr;</b></button>
 <div id="toast" role="status"></div>
@@ -179,8 +190,11 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script src="js/hero3d.js"></script>
 <script src="js/network.js"></script>
 <script src="js/terminal.js"></script>
 <script src="js/main.js"></script>
+<script src="js/media.js"></script>
 </body>
 </html>
