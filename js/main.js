@@ -46,7 +46,7 @@ let n=0;const D=RM?0:1300,t0=performance.now();
 setTimeout(()=>{if(pre.isConnected&&!root.classList.contains('ready'))start()},4000);
 
 /* headings reveal on scroll */
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.6});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.intersectionRatio>=.6)e.target.classList.add('in');else if(!e.isIntersecting)e.target.classList.remove('in')}),{threshold:[0,.6]});
 $$('.line').filter(l=>!l.closest('.hero')).forEach(l=>io.observe(l));
 
 /* header, clock, back-to-top ring, active nav */
@@ -94,11 +94,12 @@ if(!RM)$$('[data-tilt]').forEach(el=>{
 
 /* count-up stats */
 const sfx={rd:'rd',th:'th','+':'+'};
-$$('[data-n]').forEach(el=>new IntersectionObserver((es,o)=>es.forEach(e=>{
-  if(!e.isIntersecting)return;o.disconnect();
-  const n=+el.dataset.n,s=el.dataset.s,t0=performance.now(),D=RM?1:1400;
-  (function f(t){const p=Math.min((t-t0)/D,1),v=Math.round(n*(1-Math.pow(1-p,4)));
-    el.innerHTML=v+(s?`<small>${sfx[s]}</small>`:'');if(p<1)requestAnimationFrame(f)})(t0)}),{threshold:.6}).observe(el));
+$$('[data-n]').forEach(el=>{let run=0,on=false;new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting){run++;on=false;el.textContent='0';return}
+  if(on||e.intersectionRatio<.6)return;on=true;
+  const k=++run,n=+el.dataset.n,s=el.dataset.s,t0=performance.now(),D=RM?1:1400;
+  (function f(t){if(k!=run)return;const p=Math.min((t-t0)/D,1),v=Math.round(n*(1-Math.pow(1-p,4)));
+    el.innerHTML=v+(s?`<small>${sfx[s]}</small>`:'');if(p<1)requestAnimationFrame(f)})(t0)}),{threshold:[0,.6]}).observe(el)});
 
 /* copy email */
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.k);toast.k=setTimeout(()=>t.classList.remove('s'),1800)};
@@ -133,8 +134,8 @@ if(hasGS&&!RM){
     scrollTrigger:{trigger:li,start:'top 85%',toggleActions:'play none none reverse',onEnter:()=>li.classList.add('on'),onLeaveBack:()=>li.classList.remove('on')}}));
 
   // results: staggered rise
-  ScrollTrigger.batch('.nums>div,.rows li,.tk>div',{start:'top 92%',once:true,
-    onEnter:b=>gsap.from(b,{y:34,opacity:0,stagger:.07,duration:.9,ease:'power3.out',overwrite:true})});
+  const rise=b=>gsap.fromTo(b,{y:34,opacity:0},{y:0,opacity:1,stagger:.07,duration:.9,ease:'power3.out',overwrite:true});
+  ScrollTrigger.batch('.nums>div,.rows li,.tk>div',{start:'top 92%',onEnter:rise,onEnterBack:rise});
 }
 /* section-to-section transitions */
 if(hasGS&&!RM){

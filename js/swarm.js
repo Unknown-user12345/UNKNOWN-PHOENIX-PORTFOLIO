@@ -1,6 +1,7 @@
 // The swarm: labelled tool cursors that inspect the real page. Everything is drawn on one
 // canvas above the site, so the existing animations keep running underneath it untouched.
-// Opening run (once per visit), then small missions per section. window.Swarm = terminal hooks.
+// Opening run (on load and whenever you come back to the top), then small missions per section.
+// Everything replays: typed text and heading decodes reset once off screen. window.Swarm = terminal hooks.
 (function(){
   if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
   const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -260,24 +261,26 @@
   // typed text: the paragraph keeps its full size and line breaks from the start, the untyped
   // part is just invisible, so nothing on the page jumps. Screen readers get the whole text at once.
   function typer(p){
-    const txt=p.textContent.trim(),INK=3;let n=0,t0=0,step=null,last={x:0,y:0};
-    p.innerHTML='<span class="ty-sr"></span><span aria-hidden="true"><span class="ty-done"></span><span class="ty-caret"></span><span class="ty-ink"></span><span class="ty-rest"></span></span>';
-    p.firstChild.textContent=txt;
-    const [done,caret,ink,rest]=p.lastChild.children;
+    const txt=p.textContent.trim(),INK=3;let n=0,t0=0,step=null,last={x:0,y:0},done,caret,ink,rest;
+    const build=()=>{p.innerHTML='<span class="ty-sr"></span><span aria-hidden="true"><span class="ty-done"></span><span class="ty-caret"></span><span class="ty-ink"></span><span class="ty-rest"></span></span>';
+      p.firstChild.textContent=txt;[done,caret,ink,rest]=p.lastChild.children};
     const paint=()=>{done.textContent=txt.slice(0,n);ink.textContent=txt.slice(n,n+INK);rest.textContent=txt.slice(n+INK)};
-    paint();
+    build();paint();
     // quick and slightly uneven, with a short breath after punctuation
     const at=[];let sum=0;for(let i=0;i<txt.length;i++){sum+=rand(10,18)+('.,:;'.includes(txt[i])?85:0);at.push(sum)}
     const this_={
       get started(){return !!step},get finished(){return n>=txt.length},
       pos(){if(caret.isConnected){const r=R(caret);last={x:r.x+2,y:r.y+r.h-2}}return last},
       start(onDone){if(step)return;t0=now;step=()=>{const e=now-t0;let k=n;while(k<txt.length&&at[k]<=e)k++;if(k==n)return;n=k;
-        if(n>=txt.length){ticks.delete(step);this_.pos();p.textContent=txt;if(onDone)onDone()}else paint()};ticks.add(step)}};
+        if(n>=txt.length){ticks.delete(step);this_.pos();p.textContent=txt;if(onDone)onDone()}else paint()};ticks.add(step)},
+      reset(){if(!step)return;ticks.delete(step);step=null;n=0;build();paint()}};
     return this_;
   }
+  // typed text goes blank again only once it is fully off screen, so nothing visibly disappears
+  const whenGone=(el,fn)=>new IntersectionObserver(e=>{if(!e[0].isIntersecting)fn()}).observe(el);
 
   // work: a tool types each description while the card gets boxed and tagged as an exhibit
-  $$('.pj').forEach((card,i)=>{const para=$('p',card),type=para?typer(para):null;mission(card,c=>{
+  $$('.pj').forEach((card,i)=>{const para=$('p',card),type=para?typer(para):null;if(type)whenGone(card,type.reset);mission(card,c=>{
     const title=$('h3',card).textContent,rect=()=>R(card);
     const f=c.frame(rect,{tone:i%2?'am':'or',tag:`EX-0${i+1}`,note:`fnv1a ${fnv(title)}`});
     tw(f,{p:1},.9,lin);
@@ -290,15 +293,15 @@
 
   // journey: a tool rides the tip of the line and calls out the year it has reached
   const tl=$('#tl');
-  const logTypers=tl&&window.gsap?$$('li',tl).map(li=>{const q=$('p',li);return q?typer(q):null}):[];
+  const logTypers=tl&&window.gsap?$$('li',tl).map(li=>{const q=$('p',li);if(!q)return null;const t=typer(q);whenGone(li,t.reset);return t}):[];
   if(tl&&window.gsap)mission(tl,c=>{
     const [a]=c.take(1);if(a){a.follow=.25}
     const items=$$('li',tl),tip=()=>{const r=R(tl),p=parseFloat(tl.style.getPropertyValue('--p'))||0;return{x:r.x+5,y:r.y+6+p*(r.h-12)}};
     let last=-1,box=null;
     if(a)a.go(tip,.7);
     c.tick(()=>{const y=tip().y;let n=0;items.forEach((li,i)=>{if(li.getBoundingClientRect().top<=y+10)n=i});
-      if(n==last)return;last=n;if(a){a.label=$('time',items[n]).textContent;if(!a.path)a.press()}
       for(let i=0;i<=n;i++)if(logTypers[i])logTypers[i].start();
+      if(n==last)return;last=n;if(a){a.label=$('time',items[n]).textContent;if(!a.path)a.press()}
       if(box)drop(box);const el=$('div',items[n]);box=c.frame(()=>R(el),{tone:'or',dim:false,tag:`log.${n}`,soft:.7});tw(box,{p:1},.7)});
   },'-15% 0px -15% 0px');
 
@@ -329,13 +332,15 @@
 
   /* ---------- headings decode as they rise in ---------- */
   const G='abcdef0123456789/#%&';
-  function decode(span){
-    const txt=span.textContent;span.style.minHeight=span.offsetHeight+'px';const t0=performance.now();let last=0;
-    (function f(t){const p=clamp((t-t0)/950);
+  function decode(span,txt){
+    const k=span.dk=(span.dk||0)+1;span.textContent=txt;span.style.minHeight='';span.style.minHeight=span.offsetHeight+'px';const t0=performance.now();let last=0;
+    (function f(t){if(span.dk!=k)return;const p=clamp((t-t0)/950);
       if(t-last>42||p>=1){last=t;const n=Math.floor(out(p)*txt.length);span.textContent=txt.split('').map((c,i)=>i<n||c==' '?c:G[Math.random()*G.length|0]).join('')}
       if(p<1)requestAnimationFrame(f);else{span.textContent=txt;span.style.minHeight=''}})(t0)}
-  $$('h2.line').forEach(h=>{const s=h.firstElementChild;if(!s)return;
-    new MutationObserver((_,o)=>{if(h.classList.contains('in')){o.disconnect();decode(s)}}).observe(h,{attributes:true,attributeFilter:['class']})});
+  // main.js takes .in off again when a heading leaves the screen, so this runs on every return
+  $$('h2.line').forEach(h=>{const s=h.firstElementChild;if(!s)return;const txt=s.textContent;let was=h.classList.contains('in');
+    new MutationObserver(()=>{const on=h.classList.contains('in');if(on==was)return;was=on;
+      if(on)decode(s,txt);else{s.dk=(s.dk||0)+1;s.textContent=txt;s.style.minHeight=''}}).observe(h,{attributes:true,attributeFilter:['class']})});
 
   /* ---------- scroll ruler on the right edge ---------- */
   const rule=document.createElement('div');rule.id='rule';rule.setAttribute('aria-hidden','true');rule.innerHTML='<i><b></b></i>';document.body.appendChild(rule);
@@ -344,20 +349,29 @@
   addEventListener('scroll',onRule,{passive:true});onRule();
 
   /* ---------- start ---------- */
-  let seen=false;try{seen=!!sessionStorage.getItem('swarm-seen')}catch(e){}
-  const play=!seen&&!location.hash&&scrollY<40;
+  const play=!location.hash&&scrollY<40;
   if(play)root.classList.add('swarm-intro');
-  const begin=()=>{if(play){try{sessionStorage.setItem('swarm-seen','1')}catch(e){}intro()}else sync()};
+  const begin=()=>{if(play)intro();else sync()};
   if(root.classList.contains('ready'))begin();else document.addEventListener('site:ready',begin,{once:true});
+
+  // the whole opening again: headline, case file, stamp, 3D object and the swarm
+  function reopen(){
+    $$('.hero .line').forEach(l=>l.classList.remove('in'));
+    const cs=$('.case');if(cs){cs.style.animation='none';void cs.offsetWidth;cs.style.animation=''}
+    if(stamp){stamp.style.animation='none';void stamp.offsetWidth;stamp.style.animation='st .5s var(--ease) 3.05s forwards'}
+    if(window.heroCore)window.heroCore.assemble();
+    $$('.hero .line').forEach((l,i)=>setTimeout(()=>l.classList.add('in'),500+i*130));intro()}
+
+  // scrolling away and coming back to the top runs it again
+  let armed=false,queued=false;
+  addEventListener('scroll',()=>{const y=scrollY;if(y>heroH*.3)armed=true;
+    else if(armed&&!introOn&&!queued&&y<heroH*.08){armed=false;reopen()}},{passive:true});
 
   /* ---------- terminal commands ---------- */
   window.Swarm={
     // same wipe as the nav, then the opening again from the top
-    replay(){const logo=$('.logo');finish();if(logo)logo.click();
-      setTimeout(()=>{$$('.hero .line').forEach(l=>l.classList.remove('in'));
-        if(stamp){stamp.style.animation='none';void stamp.offsetWidth;stamp.style.animation='st .5s var(--ease) 3.05s forwards'}
-        if(window.heroCore)window.heroCore.assemble();
-        $$('.hero .line').forEach((l,i)=>setTimeout(()=>l.classList.add('in'),500+i*130));intro()},900)},
+    replay(){const logo=$('.logo');finish();queued=true;if(logo)logo.click();
+      setTimeout(()=>{queued=false;armed=false;reopen()},900)},
     breach(){
       document.dispatchEvent(new Event('swarm:breach'));
       const term=$('#term'),t0=now,D=2600,bars=[];for(let i=0;i<14;i++)bars.push({y:rand(0,1),h:rand(2,22),s:rand(0,1),o:rand(-40,40)});

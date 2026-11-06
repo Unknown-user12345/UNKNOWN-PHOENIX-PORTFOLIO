@@ -36,6 +36,10 @@
     if(e.key=='ArrowDown'){inp.value=hist[++hi]||'';hi=Math.min(hi,hist.length)}
   });
   document.querySelector('.tq').addEventListener('click',e=>{if(e.target.tagName=='BUTTON'&&!busy){run(e.target.textContent)}});
-  // auto-run once when it scrolls into view
-  new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){o.disconnect();add('Welcome. Running whoami for you...','m');setTimeout(()=>run('whoami'),500)}},{threshold:.5}).observe(document.getElementById('term'));
+  // auto-run each time it scrolls back into view, from a clean screen
+  let fresh=true,tm=0;
+  new IntersectionObserver(e=>{const r=e[0];
+    if(!r.isIntersecting){fresh=true;clearTimeout(tm);return}
+    if(r.intersectionRatio<.5||!fresh||busy||document.activeElement==inp)return;
+    fresh=false;out.innerHTML='';add('Welcome. Running whoami for you...','m');tm=setTimeout(()=>run('whoami'),500)},{threshold:[0,.5]}).observe(document.getElementById('term'));
 })();

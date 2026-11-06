@@ -17,8 +17,9 @@
     const jr=el('div','jr');tl.parentNode.insertBefore(jr,tl);jr.appendChild(tl);
     // phones and reduced motion: a photo inside each entry
     items.forEach((li,i)=>{const f=el('figure','lph','<img loading="lazy" decoding="async" alt="" width="760" height="760">');$('img',f).src=src(i);$('div',li).appendChild(f)});
-    const o=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');o.unobserve(e.target)}}),{rootMargin:'0px 0px -12% 0px'});
-    $$('.lph').forEach(f=>o.observe(f));
+    const o=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{rootMargin:'0px 0px -12% 0px'});
+    const o2=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)e.target.classList.remove('in')}));
+    $$('.lph').forEach(f=>{o.observe(f);o2.observe(f)});
 
     if(moving){
       const stage=el('aside','jstage');stage.setAttribute('aria-hidden','true');
