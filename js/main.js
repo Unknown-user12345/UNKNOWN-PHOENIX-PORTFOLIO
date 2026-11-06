@@ -147,10 +147,10 @@ if(hasGS&&!RM){
   const hb=hud.firstChild,hs=hud.lastChild;
 
   function change(id){
-    if(wipe&&wipe.className)return;
     hb.textContent='0'+(ids.indexOf(id)+1);hs.textContent=NAMES[id];
-    gsap.set(hud,{autoAlpha:1});
     gsap.fromTo(hud.children,{yPercent:110,opacity:0},{yPercent:0,opacity:1,stagger:.1,duration:1,ease:'power3.out',overwrite:true});
+    // the label always updates, but a nav jump already has the wipe, so no sweep on top of it
+    if(wipe&&wipe.className)return;
     gsap.timeline()
       .fromTo(bar,{scaleX:0,opacity:1,transformOrigin:'0 50%'},{scaleX:1,duration:1.4,ease:'power2.out'})
       .to(bar,{opacity:0,duration:.9});
@@ -163,8 +163,17 @@ if(hasGS&&!RM){
       .to(tt,{opacity:0,duration:1},2.2);
   }
   
-  ids.forEach(id=>ScrollTrigger.create({trigger:'#'+id,start:'top 50%',onEnter:()=>change(id),onEnterBack:()=>change(id)}));
-  ScrollTrigger.create({trigger:'.hero',start:'bottom 50%',onEnterBack:()=>gsap.to(hud,{autoAlpha:0,duration:.3})});
+  // read the section from the real scroll position so jumps can't leave the label out of date.
+  // no label over the hero, and it steps aside once the footer comes up
+  const secs=ids.map(id=>$('#'+id)),ft=$('.ft');let cur=null,shown=false;
+  function syncHud(){
+    let id=null;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<=innerHeight*.5)id=ids[i]});
+    if(id!=cur){cur=id;if(id)change(id)}
+    const show=!!id&&ft.getBoundingClientRect().top>=innerHeight-60;
+    if(show!=shown){shown=show;gsap.to(hud,{autoAlpha:show?1:0,duration:.3,overwrite:true})}
+  }
+  addEventListener('scroll',syncHud,{passive:true});addEventListener('resize',syncHud);
+  ScrollTrigger.addEventListener('refresh',syncHud);syncHud();
 
   ['about','journey','results','terminal','contact'].forEach(id=>{
     const s=$('#'+id),w=$('.wrap',s);
