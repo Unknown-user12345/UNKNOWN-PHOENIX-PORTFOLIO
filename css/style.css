@@ -342,3 +342,159 @@ h1{font-size:clamp(30px,4.8vw,68px);line-height:1;letter-spacing:-.045em;font-we
 .pj:hover .cover img{transform:scale(1);filter:none}
 .pj:hover .viz,.pj:hover .cover{border-color:#4a3a33}
 @media(max-height:760px){.viz,.cover{display:block;height:110px}.viz{display:grid}}
+
+/* stacked cards on small screens: size to their content so the animated panels are not squashed */
+@media(max-width:900px){.pj{flex-basis:auto;min-height:0}}
+
+/* ===== PHOTOS ===== */
+/* black and white photo behind each animated sketch, warming to orange on hover */
+.viz .vbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.08);filter:brightness(.95);animation:vbg 1.2s var(--ease);transition:transform 1.2s var(--ease),filter .7s var(--ease)}
+@keyframes vbg{from{opacity:0}}
+.pj:hover .vbg{transform:scale(1);filter:brightness(1) sepia(1) saturate(4.2) hue-rotate(-22deg)}
+.viz svg{position:relative;z-index:2}
+.has-img .viz::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(11,12,15,.5),rgba(11,12,15,.78))}
+.has-img .viz::after{z-index:1}
+.has-img .viz{background:#0b0c0f;isolation:isolate}
+.has-img .viz .d{fill:rgba(239,236,229,.26)}
+.has-img .viz .sd{stroke:rgba(239,236,229,.34)}
+.has-img .viz text{fill:#d9d5cc}
+.has-img .viz text.ac{fill:var(--dac)}
+
+.ft a{color:inherit;text-underline-offset:3px}
+
+/* typed text: the rest of the paragraph holds its place, invisibly */
+.ty-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.ty-rest{visibility:hidden}
+.ty-ink{color:var(--ac)}
+.ty-caret{position:relative}
+.ty-caret::after{content:"";position:absolute;left:0;top:.05em;width:2px;height:1.15em;background:var(--ac)}
+
+/* ===== SECTIONS AFTER WORK ===== */
+/* journey: timeline on the left, photo pinned on the right */
+.lph{display:none;margin:14px 0 0;border-radius:14px;overflow:hidden;aspect-ratio:16/10;background:#0b0c0f;clip-path:inset(0 0 100% 0 round 14px);transition:clip-path 1.1s var(--ease)}
+.lph.in,.still .lph{clip-path:inset(0 0 0 0 round 14px)}
+.lph img{width:100%;height:100%;object-fit:cover;display:block}
+.still .lph{display:block}
+.jstage{display:none}
+@media(max-width:900px){.lph{display:block}}
+@media(min-width:901px){
+  .moving .jr{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,410px);gap:56px;align-items:start}
+  .moving .tl li{grid-template-columns:118px minmax(0,1fr);gap:16px;padding-bottom:24vh}
+  .moving .tl li:last-child{padding-bottom:30vh}
+  .jstage{display:block;position:sticky;top:13vh;height:min(72vh,560px);border-radius:18px;overflow:hidden;background:#0b0c0f;color:#fff;box-shadow:0 40px 70px -40px rgba(16,17,20,.6)}
+}
+.js-imgs,.js-imgs img{position:absolute;inset:0;width:100%;height:100%}
+.js-imgs img{object-fit:cover;display:block;will-change:clip-path,transform}
+.jstage::after{content:"";position:absolute;inset:0;z-index:30;background:linear-gradient(180deg,rgba(8,9,12,.42),transparent 26%,transparent 52%,rgba(8,9,12,.86));pointer-events:none}
+.js-bar{position:absolute;left:0;right:0;top:0;height:2px;background:var(--ac);box-shadow:0 0 22px 3px rgba(255,90,31,.7);z-index:31;opacity:0}
+.js-top{position:absolute;z-index:32;left:20px;right:20px;top:18px;display:flex;justify-content:space-between;font:500 11px 'Geist Mono',monospace;letter-spacing:.12em}
+.js-top span:first-child{color:#ff8a5c}
+.js-yr{position:absolute;z-index:32;left:20px;right:16px;bottom:16px;font:700 clamp(38px,4.6vw,64px)/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.045em}
+.js-c{position:absolute;z-index:32;width:14px;height:14px;border:1.5px solid rgba(255,255,255,.75)}
+.js-c.a{left:8px;top:8px;border-right:0;border-bottom:0}.js-c.b{right:8px;top:8px;border-left:0;border-bottom:0}
+.js-c.c{left:8px;bottom:8px;border-right:0;border-top:0}.js-c.d{right:8px;bottom:8px;border-left:0;border-top:0}
+
+/* results: flashlight panel */
+@property --mx{syntax:'<length-percentage>';inherits:true;initial-value:30%}
+@property --my{syntax:'<length-percentage>';inherits:true;initial-value:40%}
+.numwrap{position:relative;overflow:hidden;border-radius:24px;background:#07080b;color:var(--dink);padding:clamp(24px,4vw,52px);margin-bottom:64px;min-height:clamp(340px,34vw,450px);display:flex;flex-direction:column;justify-content:space-between;gap:48px;isolation:isolate}
+.numwrap.auto{animation:nwsweep 11s ease-in-out infinite}
+@keyframes nwsweep{0%,100%{--mx:18%;--my:30%}35%{--mx:62%;--my:62%}70%{--mx:86%;--my:26%}}
+.nw-img{position:absolute;left:0;right:0;top:-10%;height:120%;z-index:-1}
+.nw-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.nw-base{opacity:.26}
+.nw-lit{-webkit-mask-image:radial-gradient(circle clamp(170px,22vw,300px) at var(--mx) calc(var(--my) + 8%),#000 25%,transparent 100%);mask-image:radial-gradient(circle clamp(170px,22vw,300px) at var(--mx) calc(var(--my) + 8%),#000 25%,transparent 100%)}
+.numwrap::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,8,11,.2),rgba(7,8,11,.78));pointer-events:none}
+.nw-tag{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:500 11px 'Geist Mono',monospace;letter-spacing:.12em;color:#ff8a5c}
+.nw-tag span:last-child{letter-spacing:0;color:var(--dmute)}
+.numwrap .nums{margin:0}
+.numwrap .nums div{border-top-color:rgba(239,236,229,.45)}
+.numwrap .nums b small,.numwrap .nums span{color:#c9c5bb}
+
+/* results: photo that follows the cursor over a row */
+#hv{position:fixed;left:0;top:0;z-index:58;width:280px;height:190px;margin:-95px 0 0 26px;pointer-events:none;will-change:transform}
+#hv img{display:block;width:100%;height:100%;object-fit:cover;border-radius:12px;box-shadow:0 26px 50px -18px rgba(16,17,20,.65);clip-path:inset(50% 0 50% 0 round 12px);opacity:0;transition:clip-path .55s var(--ease),opacity .25s}
+#hv.s img{clip-path:inset(0 0 0 0 round 12px);opacity:1}
+
+/* results: toolkit tiles flip dark and show their data stream */
+.tk>div{position:relative;overflow:hidden;transition:background .35s,color .35s}
+.tk>div>h4,.tk>div>p{position:relative;z-index:1;transition:color .35s}
+.hx{position:absolute;inset:0;overflow:hidden;font:400 10px/1.55 'Geist Mono',monospace;color:var(--ac);white-space:pre;opacity:.13;pointer-events:none;padding:8px 10px;transition:opacity .35s;-webkit-mask-image:radial-gradient(circle 230px at var(--mx,70%) var(--my,60%),#000 20%,transparent 100%);mask-image:radial-gradient(circle 230px at var(--mx,70%) var(--my,60%),#000 20%,transparent 100%)}
+.hx>span{display:block;animation:hx 26s linear infinite}
+@keyframes hx{to{transform:translateY(-50%)}}
+.tk>div:hover{background:var(--ink)}
+.tk>div:hover h4{color:var(--dink)}
+.tk>div:hover p{color:var(--dmute)}
+.tk>div:hover .hx{opacity:.62}
+
+/* terminal: lit building behind, screen texture, live capture beside it */
+.termsec{overflow:hidden;isolation:isolate}
+.tbg{position:absolute;inset:0;z-index:-1;overflow:hidden}
+.tbg img{position:absolute;left:0;top:-10%;width:100%;height:120%;object-fit:cover;opacity:.42}
+.tbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0e0f12 8%,rgba(14,15,18,.62) 55%,rgba(14,15,18,.3)),linear-gradient(0deg,#0e0f12,transparent 30%)}
+.tgrid{display:grid;grid-template-columns:minmax(0,1fr) 312px;gap:18px;align-items:stretch}
+.tgrid .term{max-width:none}
+.term{position:relative;box-shadow:0 40px 90px -40px rgba(255,90,31,.32)}
+.term::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:repeating-linear-gradient(180deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px)}
+.tout{text-shadow:0 0 14px rgba(255,122,69,.22)}
+.cap{display:flex;flex-direction:column;min-width:0;border:1px solid var(--dline);border-radius:14px;background:rgba(11,12,15,.74);backdrop-filter:blur(10px);overflow:hidden;font:400 10.5px/1.7 'Geist Mono',monospace;color:var(--dmute);transition:border-color .4s}
+.cap-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--dline);font-size:11px}
+.cap-h b{font-weight:500;color:var(--dink);display:flex;align-items:center;gap:7px}
+.cap-h i{width:7px;height:7px;border-radius:50%;background:var(--ac);animation:bk 1.2s infinite}
+.cap canvas{display:block;width:100%;height:72px;border-bottom:1px solid var(--dline)}
+.cap-r{flex:1;min-height:0;overflow:hidden;padding:8px 14px;white-space:nowrap}
+.cap-r p{overflow:hidden;text-overflow:ellipsis}
+.cap-r p:first-child{color:var(--dink)}
+.cap-r p.hot{color:#ff8a5c}
+.cap.alert{border-color:var(--ac)}
+@media(max-width:1100px){.tgrid{grid-template-columns:minmax(0,1fr)}.cap-r{max-height:150px}}
+
+/* contact: Boudhanath at night, giant moving type */
+.contact{background:#07080b;color:var(--dink);isolation:isolate;padding-top:70px}
+.contact::before,.contact::after{z-index:-1}
+.cbg{position:absolute;inset:0;z-index:-2;overflow:hidden;display:block}
+.cbg img{position:absolute;left:0;top:-8%;width:100%;height:116%;object-fit:cover;object-position:50% 60%;display:block}
+.cbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,8,11,.9),rgba(7,8,11,.52) 52%,rgba(7,8,11,.18)),linear-gradient(0deg,#07080b,transparent 26%)}
+.cmq{overflow:hidden;margin-bottom:64px;pointer-events:none}
+.cmq>div{display:flex;width:max-content;align-items:center;gap:.28em;font:800 clamp(64px,13vw,190px)/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.05em;white-space:nowrap;color:transparent;-webkit-text-stroke:1.5px rgba(239,236,229,.5);will-change:transform}
+.cmq i{font-style:normal;color:var(--ac);-webkit-text-stroke:0}
+.contact .csub{color:#c9c5bb}
+.contact .mail{color:var(--dink)}
+.contact .mail:hover{color:#ff8a5c}
+.contact .btn{background:var(--dink);color:var(--ink);border-color:var(--dink)}
+.contact .btn:hover{background:var(--ac);border-color:var(--ac);color:#fff}
+.contact .btn.ghost{background:rgba(7,8,11,.35);color:var(--dink);border-color:rgba(239,236,229,.4);backdrop-filter:blur(6px)}
+.contact .btn.ghost:hover{background:var(--dink);color:var(--ink);border-color:var(--dink)}
+.geo{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:40px;font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:#c9c5bb}
+.geo span:first-child{color:#ff8a5c}
+.ft{background:#07080b;color:var(--dmute);border-top-color:var(--dline)}
+@media(max-width:700px){.cbg::after{background:linear-gradient(180deg,rgba(7,8,11,.78),rgba(7,8,11,.5) 45%,rgba(7,8,11,.86))}.cmq{margin-bottom:40px}}
+
+/* ===== SWARM LAYER ===== */
+/* sits above the page and the section sweep, below the wipe and the cursor ring */
+#swarm{position:fixed;inset:0;width:100%;height:100%;z-index:72;pointer-events:none}
+/* the stamp keeps its animation, it just lands when the swarm arrives */
+.ready.swarm-intro .stamp{animation-delay:3.05s}
+
+#swp{position:fixed;left:50%;bottom:68px;z-index:73;display:flex;align-items:center;gap:10px;padding:7px 8px 7px 12px;border-radius:99px;background:var(--ink);color:var(--dink);font:400 11px/1 'Geist Mono',monospace;white-space:nowrap;box-shadow:0 10px 30px -12px rgba(16,17,20,.5);opacity:0;visibility:hidden;transform:translate(-50%,18px);transition:opacity .5s var(--ease),transform .7s var(--ease),visibility .5s}
+#swp.on{opacity:1;visibility:visible;transform:translate(-50%,0)}
+#swp .dots{display:flex}
+#swp .dots i{width:9px;height:9px;border-radius:50%;margin-left:-3px;border:1px solid var(--ink);background:var(--ac)}
+#swp .dots i:nth-child(1){margin-left:0}#swp .dots i:nth-child(2){background:#ffb020}#swp .dots i:nth-child(3){background:var(--dink)}#swp .dots i:nth-child(4){background:var(--dmute)}
+#swp b{font-weight:500}
+#swp .sep{width:1px;height:11px;background:var(--dline)}
+#swp .ct{color:var(--dmute);min-width:15ch;font-variant-numeric:tabular-nums}
+#swp .bar{width:64px;height:2px;background:var(--dline);overflow:hidden}
+#swp .bar i{display:block;height:100%;background:var(--ac);transform:scaleX(0);transform-origin:left}
+#swp .st{color:var(--dac);min-width:11ch}
+#swp button{all:unset;cursor:pointer;padding:5px 10px;border-radius:99px;border:1px solid var(--dline);color:var(--dink);transition:background .25s,border-color .25s}
+#swp button:hover{background:var(--ac);border-color:var(--ac);color:var(--ink)}
+#swp button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+@media(max-width:700px){#swp{bottom:58px}#swp .bar,#swp .sep,#swp .ct{display:none}}
+
+#rule{position:fixed;right:9px;top:24vh;height:46vh;width:7px;z-index:57;pointer-events:none;mix-blend-mode:difference;opacity:0;transition:opacity .8s var(--ease) 1s;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.34) 0 1px,transparent 1px 11px)}
+.ready #rule{opacity:1}
+#rule i{position:absolute;right:0;top:0;width:15px;height:1px;background:#fff;display:block;will-change:transform}
+#rule b{position:absolute;right:20px;top:-6px;font:500 10px/1 'Geist Mono',monospace;color:#fff}
+@media(max-width:900px){#rule{display:none}}
+@media(prefers-reduced-motion:reduce){#rule,#swp{display:none}}

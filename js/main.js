@@ -36,6 +36,7 @@ function start(){
   $$('.hero .line').forEach((l,i)=>reveal(l,500+i*130));
   setTimeout(()=>pre.remove(),1300);
   ring.classList.add('on');
+  document.dispatchEvent(new Event('site:ready'));
 }
 let n=0;const D=RM?0:1300,t0=performance.now();
 (function tick(t){
