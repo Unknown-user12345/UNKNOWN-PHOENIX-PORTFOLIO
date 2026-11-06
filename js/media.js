@@ -1,7 +1,7 @@
 // Photo, showreel and project images. Each one stays hidden until its file exists:
 //   img/me.jpg           portrait in About
 //   media/reel.mp4       showreel video (plus optional media/reel.jpg poster)
-//   img/work-1.jpg ...   project covers, numbered in card order (replaces the animated sketch)
+//   img/work-1.jpg ...   project covers, numbered in card order (sits behind the animated sketch)
 (function(){
   const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
   const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -19,9 +19,12 @@
     refresh()},()=>{});
 
   /* project covers */
-  $$('.pj').forEach((c,i)=>load(`img/work-${i+1}.jpg`).then(img=>{
-    img.alt='';img.loading='lazy';const f=document.createElement('div');f.className='cover';f.appendChild(img);
-    const v=$('.viz',c);v?v.replaceWith(f):c.insertBefore(f,$('h3',c));c.classList.add('has-img')},()=>{}));
+  // the photo sits behind the animated sketch, and only loads as its card nears the screen
+  const coverIO=new IntersectionObserver((es,o)=>es.forEach(e=>{
+    if(!e.isIntersecting)return;o.unobserve(e.target);
+    const c=e.target,i=$$('.pj').indexOf(c),v=$('.viz',c);if(!v)return;
+    load(`img/work-${i+1}.jpg`).then(img=>{img.alt='';img.className='vbg';v.prepend(img);c.classList.add('has-img')},()=>{})}),{rootMargin:'60% 100% 60% 100%'});
+  $$('.pj').forEach(c=>coverIO.observe(c));
 
   /* showreel */
   const reel=$('#reel'),vid=reel&&$('video',reel);

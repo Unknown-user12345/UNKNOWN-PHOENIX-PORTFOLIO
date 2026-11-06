@@ -3,7 +3,7 @@
   const out=document.getElementById('tout'),inp=document.getElementById('tcmd');if(!out)return;
   const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const C={
-    help:['Available commands:','  whoami    who I am','  skills    tools and areas','  certs     certifications','  ctf       competition results','  projects  what I have built','  contact   how to reach me','  clear     clear the screen'],
+    help:['Available commands:','  whoami    who I am','  skills    tools and areas','  certs     certifications','  ctf       competition results','  projects  what I have built','  contact   how to reach me','  swarm     replay the opening run','  breach    simulate an incident','  clear     clear the screen'],
     whoami:['Abhaya Chand, Kathmandu, Nepal','BSc (Hons) Ethical Hacking and Cyber Security, 4th semester','Technical Blue Team Leader, Cyber Security Club','Focus: digital forensics, incident response, web security'],
     skills:['forensics  Volatility, ExifTool, Binwalk, Steghide','offensive  Burp Suite, ffuf, Gobuster, Nmap, Metasploit, Hydra','network    Wireshark, Cisco Packet Tracer','systems    Arch Linux, Python, Bash, Docker, CUDA'],
     certs:['Practical Ethical Hacking (TCM Security)','Pre Security and Cyber Security 101 (TryHackMe)','Certified Cybersecurity Educator Professional (CCEP)','AV/EDR Evasion Practical Techniques (Red Team Leaders)'],
@@ -21,6 +21,12 @@
     const k=cmd.toLowerCase().split(/\s+/)[0];
     if(k=='clear'){out.innerHTML='';return}
     if(k=='sudo'){return print(['Nice try. Permission denied, and it has been logged.'])}
+    if(k=='swarm'||k=='breach'){
+      if(!window.Swarm)return print(['Animations are turned off on this device.']);
+      if(k=='swarm'){setTimeout(()=>window.Swarm.replay(),500);return print(['Deploying 14 tools. Taking you back to the top...'])}
+      window.Swarm.breach();
+      return print(['[!] Outbound traffic to an unknown host','[*] Isolating host, collecting memory image','[*] Rotating session tokens','[+] Contained. This was a simulation, nothing was touched.']);
+    }
     if(C[k])return print(C[k]);
     return print(['command not found: '+cmd,'type help to see what is available'])
   }
@@ -30,6 +36,10 @@
     if(e.key=='ArrowDown'){inp.value=hist[++hi]||'';hi=Math.min(hi,hist.length)}
   });
   document.querySelector('.tq').addEventListener('click',e=>{if(e.target.tagName=='BUTTON'&&!busy){run(e.target.textContent)}});
-  // auto-run once when it scrolls into view
-  new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){o.disconnect();add('Welcome. Running whoami for you...','m');setTimeout(()=>run('whoami'),500)}},{threshold:.5}).observe(document.getElementById('term'));
+  // auto-run each time it scrolls back into view, from a clean screen
+  let fresh=true,tm=0;
+  new IntersectionObserver(e=>{const r=e[0];
+    if(!r.isIntersecting){fresh=true;clearTimeout(tm);return}
+    if(r.intersectionRatio<.5||!fresh||busy||document.activeElement==inp)return;
+    fresh=false;out.innerHTML='';add('Welcome. Running whoami for you...','m');tm=setTimeout(()=>run('whoami'),500)},{threshold:[0,.5]}).observe(document.getElementById('term'));
 })();
