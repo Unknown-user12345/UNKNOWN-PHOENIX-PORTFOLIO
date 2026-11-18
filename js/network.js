@@ -1,6 +1,6 @@
 (function () {
   const hero = document.querySelector('.hero'), s = document.getElementById('spot');
-  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const RM = !(window.SITE && window.SITE.motion);
   if (!hero || !s || RM) return;
 
   if (matchMedia('(pointer:fine)').matches) {

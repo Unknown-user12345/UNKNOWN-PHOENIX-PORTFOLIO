@@ -8,9 +8,24 @@
 <meta property="og:title" content="Abhaya Chand | Digital Forensics & Incident Response">
 <meta property="og:description" content="Forensic investigations, web security testing, CTF results and security projects.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Cpath d='M8 23 16 8l8 15M11 18h10' stroke='%23ff5a1f' stroke-width='2.6' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Serif:ital@1&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>document.documentElement.classList.add('js')</script>
+<script>
+/* Boot: decide the motion mode before any style or script runs.
+   The OS "reduce motion" setting is the default, but a visitor can override it
+   with the Motion button in the header (remembered in localStorage).
+   Also a last-resort unlock, so a failed script can never leave the page frozen. */
+(function(){
+  var r=document.documentElement;r.classList.add('js');
+  var pref=null;try{pref=localStorage.getItem('motion')}catch(e){}
+  var sys=false;try{sys=matchMedia('(prefers-reduced-motion:reduce)').matches}catch(e){}
+  var on=pref?pref=='on':!sys;
+  window.SITE={motion:on,sysReduce:sys,pref:pref};
+  r.classList.add(on?'mo':'nomo');
+  setTimeout(function(){r.classList.add('ready')},7000);
+})();
+</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -24,6 +39,7 @@
     <a href="#about">About</a><a href="#reel" hidden>Reel</a><a href="#work">Work</a><a href="#journey">Journey</a><a href="#results">Results</a><a href="#terminal">Terminal</a><a href="#contact">Contact</a>
   </nav>
   <span class="clock" id="clock" aria-label="Local time in Kathmandu"></span>
+  <button class="mtog" id="mtog" type="button" hidden><i aria-hidden="true"></i><span>Motion</span></button>
 </header>
 
 <main id="top">
@@ -131,7 +147,7 @@
     <div><b data-n="5" data-s="th">0</b><span>Pentester Nepal CTF</span></div>
     <div><b data-n="7" data-s="th">0</b><span>Trinity CTF</span></div>
     <div><b data-n="24">0</b><span>TryHackMe badges</span></div>
-    <div><b data-n="400" data-s="+">0</b><span>day TryHackMe streak</span></div>
+    <div><b data-n="500" data-s="+">0</b><span>day TryHackMe streak</span></div>
   </div>
   <div class="cols">
     <div><h3>Certifications</h3>
@@ -186,16 +202,60 @@
 <button id="up" aria-label="Back to top"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" id="upc"/></svg><b>&uarr;</b></button>
 <div id="toast" role="status"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
-<script src="js/hero3d.js"></script>
-<script src="js/network.js"></script>
-<script src="js/terminal.js"></script>
-<script src="js/main.js"></script>
-<script src="js/media.js"></script>
-<script src="js/sections.js"></script>
-<script src="js/swarm.js"></script>
+<script>
+/* Library loader.
+   The animation libraries used to come from one CDN, so anything that blocked it
+   (a filtering network, an extension, a flaky mirror) silently dropped the site to
+   its static version. Each library now has mirrors and a time limit, and the site's
+   own scripts always run afterwards whether the libraries arrived or not. */
+(function(){
+  var CDN=[
+    ['https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js',
+     'https://unpkg.com/gsap@3.12.5/dist/gsap.min.js',
+     'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js'],
+    ['https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js',
+     'https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js',
+     'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js'],
+    ['https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js',
+     'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js'],
+    ['https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js',
+     'https://unpkg.com/three@0.149.0/build/three.min.js',
+     'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js']
+  ];
+  var OWN=['js/hero3d.js','js/network.js','js/terminal.js','js/main.js','js/media.js','js/sections.js','js/swarm.js'];
+  var TIMEOUT=7000;
+
+  // try each mirror in turn; give up on this library rather than hold up the page
+  function tryUrls(urls,done){
+    var i=0,finished=false;
+    function fin(){if(!finished){finished=true;done()}}
+    setTimeout(fin,TIMEOUT);
+    (function next(){
+      if(finished)return;
+      if(i>=urls.length)return fin();
+      var sc=document.createElement('script');
+      sc.src=urls[i++];sc.async=true;sc.onload=fin;sc.onerror=next;
+      document.head.appendChild(sc);
+    })();
+  }
+  // run the site's own scripts strictly in order; one failure can't stop the rest
+  function runOwn(){
+    (function step(k){
+      if(k>=OWN.length)return;
+      var sc=document.createElement('script');
+      sc.src=OWN[k];sc.async=false;
+      sc.onload=sc.onerror=function(){step(k+1)};
+      document.body.appendChild(sc);
+    })(0);
+  }
+
+  // ScrollTrigger needs GSAP first; the other two are independent, so fetch in parallel
+  var left=3,started=false;
+  function one(){if(--left<=0&&!started){started=true;runOwn()}}
+  tryUrls(CDN[0],function(){tryUrls(CDN[1],one)});
+  tryUrls(CDN[2],one);
+  tryUrls(CDN[3],one);
+})();
+</script>
 </body>
 </html>

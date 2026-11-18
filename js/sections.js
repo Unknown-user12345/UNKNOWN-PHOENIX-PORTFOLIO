@@ -5,7 +5,7 @@
 // Contact: Boudhanath at night with giant type moving on scroll
 (function(){
   const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-  const RM=matchMedia('(prefers-reduced-motion:reduce)').matches,hasGS=!!(window.gsap&&window.ScrollTrigger);
+  const RM=!(window.SITE&&window.SITE.motion),hasGS=!!(window.gsap&&window.ScrollTrigger);
   const fine=matchMedia('(pointer:fine)').matches,moving=hasGS&&!RM;
   const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e};
   document.documentElement.classList.add(moving?'moving':'still');

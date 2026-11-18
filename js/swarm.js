@@ -3,7 +3,7 @@
 // Opening run (on load and whenever you come back to the top), then small missions per section.
 // Everything replays: typed text and heading decodes reset once off screen. window.Swarm = terminal hooks.
 (function(){
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  if(!(window.SITE&&window.SITE.motion))return;
   const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
   const root=document.documentElement,hero=$('.hero');
   const fine=matchMedia('(pointer:fine)').matches,small=innerWidth<900||!fine,CAP=small?4:8;

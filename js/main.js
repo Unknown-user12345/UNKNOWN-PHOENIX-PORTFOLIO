@@ -2,7 +2,7 @@
 const CONFIG={github:'https://github.com/Unknown-user12345',linkedin:'',tryhackme:'',email:'avayachand2@gmail.com'};
 
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const RM=!(window.SITE&&window.SITE.motion);
 const root=document.documentElement;
 const hasGS=!!(window.gsap&&window.ScrollTrigger);
 if(hasGS){gsap.registerPlugin(ScrollTrigger);root.classList.add('gs')}
@@ -32,18 +32,23 @@ $$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
 const pc=$('#pc'),pre=$('#pre');
 function reveal(el,d){setTimeout(()=>el.classList.add('in'),d)}
 function start(){
-  root.classList.add('ready');pre.classList.add('go');
-  $$('.hero .line').forEach((l,i)=>reveal(l,500+i*130));
-  setTimeout(()=>pre.remove(),1300);
-  ring.classList.add('on');
+  // `ready` lifts the scroll lock, so it goes on first and outside anything that can throw
+  root.classList.add('ready');
+  try{
+    if(pre){pre.classList.add('go');setTimeout(()=>pre.remove(),1300)}
+    $$('.hero .line').forEach((l,i)=>reveal(l,500+i*130));
+    if(ring)ring.classList.add('on');
+  }catch(e){}
   document.dispatchEvent(new Event('site:ready'));
 }
 let n=0;const D=RM?0:1300,t0=performance.now();
-(function tick(t){
-  n=Math.min(100,Math.round((t-t0)/D*100));pc.textContent=n;
-  n<100?requestAnimationFrame(tick):setTimeout(start,220)
-})(t0);
-setTimeout(()=>{if(pre.isConnected&&!root.classList.contains('ready'))start()},4000);
+if(pc){
+  (function tick(t){
+    n=Math.min(100,Math.round((t-t0)/D*100));pc.textContent=n;
+    n<100?requestAnimationFrame(tick):setTimeout(start,220)
+  })(t0);
+}else setTimeout(start,0);
+setTimeout(()=>{if(!root.classList.contains('ready'))start()},4000);
 
 /* headings reveal on scroll */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.intersectionRatio>=.6)e.target.classList.add('in');else if(!e.isIntersecting)e.target.classList.remove('in')}),{threshold:[0,.6]});
@@ -64,6 +69,25 @@ const clock=$('#clock');
 const tickClock=()=>clock.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Kathmandu'}).format(new Date())+' NPT';
 tickClock();setInterval(tickClock,1000);
 
+/* motion toggle.
+   Plenty of people browse with the OS "reduce motion" setting on (it is the default
+   under Windows battery saver and on a lot of phones), and that switched this site to
+   its static version with no way back. The setting is still respected by default;
+   this just lets a visitor choose, and remembers the choice. */
+(function(){
+  const b=$('#mtog');if(!b)return;
+  const on=()=>!!(window.SITE&&window.SITE.motion);
+  const paint=()=>{b.hidden=false;b.classList.toggle('off',!on());
+    b.setAttribute('aria-pressed',String(on()));
+    b.setAttribute('title',on()?'Animations are on. Click to turn them off.':'Animations are off. Click to turn them on.');
+    $('span',b).textContent=on()?'Motion on':'Motion off'};
+  paint();
+  b.addEventListener('click',()=>{
+    try{localStorage.setItem('motion',on()?'off':'on')}catch(e){}
+    location.reload();
+  });
+})();
+
 /* nav text scramble on hover */
 const G='abcdefghijklmnopqrstuvwxyz#%&*';
 navs.forEach(a=>{const txt=a.textContent;let k;
@@ -72,12 +96,12 @@ navs.forEach(a=>{const txt=a.textContent;let k;
 
 /* cursor ring */
 const ring=$('#ring');
-if(matchMedia('(pointer:fine)').matches&&!RM){
+if(ring&&matchMedia('(pointer:fine)').matches&&!RM){
   let x=0,y=0,tx=0,ty=0;
   addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY});
   (function f(){x+=(tx-x)*.18;y+=(ty-y)*.18;ring.style.transform=`translate(${x}px,${y}px)`;requestAnimationFrame(f)})();
   document.addEventListener('pointerover',e=>ring.classList.toggle('big',!!e.target.closest('a,button,[data-tilt],input')))
-}else ring.remove();
+}else if(ring)ring.remove();
 
 /* magnetic buttons */
 if(!RM)$$('[data-mag]').forEach(el=>{
@@ -103,18 +127,21 @@ $$('[data-n]').forEach(el=>{let run=0,on=false;new IntersectionObserver(es=>es.f
 
 /* copy email */
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.k);toast.k=setTimeout(()=>t.classList.remove('s'),1800)};
-$('#em').onclick=()=>navigator.clipboard?.writeText(CONFIG.email).then(()=>toast('Email copied'),()=>toast('Copy failed. Select the address instead.'));
+const em=$('#em');if(em)em.onclick=()=>navigator.clipboard?.writeText(CONFIG.email).then(()=>toast('Email copied'),()=>toast('Copy failed. Select the address instead.'));
 
-/* scroll-driven animations (need GSAP) */
-if(hasGS&&!RM){
+/* scroll-driven animations (need GSAP).
+   Wrapped: if one of these throws on a browser, the rest of the page still animates. */
+if(hasGS&&!RM)try{
   // hero drifts away as you scroll
   gsap.to('.hero-in',{yPercent:-14,opacity:0,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom 25%',scrub:true}});
   gsap.to('.hero .bg',{yPercent:18,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
 
   // about: words light up
   const p=$('#scrub');
-  p.innerHTML=p.textContent.trim().split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
-  gsap.to('#scrub .w',{opacity:1,stagger:.1,ease:'none',scrollTrigger:{trigger:p,start:'top 80%',end:'bottom 55%',scrub:true}});
+  if(p){
+    p.innerHTML=p.textContent.trim().split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
+    gsap.to('#scrub .w',{opacity:1,stagger:.1,ease:'none',scrollTrigger:{trigger:p,start:'top 80%',end:'bottom 55%',scrub:true}});
+  }
 
   // work: pinned horizontal scroll with progress + card focus
   ScrollTrigger.matchMedia({'(min-width:901px)':()=>{
@@ -136,9 +163,10 @@ if(hasGS&&!RM){
   // results: staggered rise
   const rise=b=>gsap.fromTo(b,{y:34,opacity:0},{y:0,opacity:1,stagger:.07,duration:.9,ease:'power3.out',overwrite:true});
   ScrollTrigger.batch('.nums>div,.rows li,.tk>div',{start:'top 92%',onEnter:rise,onEnterBack:rise});
-}
+}catch(e){console.warn('scroll animations:',e)}
+
 /* section-to-section transitions */
-if(hasGS&&!RM){
+if(hasGS&&!RM)try{
   const NAMES={about:'About',work:'Work',journey:'Journey',results:'Results',terminal:'Terminal',contact:'Contact'};
   const ids=Object.keys(NAMES);
   const bar=document.createElement('div');bar.id='sweep';document.body.appendChild(bar);
@@ -181,7 +209,7 @@ if(hasGS&&!RM){
       {clipPath:'inset(-5% -5% -5% -5% round 0px)',y:0,ease:'none',
        scrollTrigger:{trigger:s,start:'top 100%',end:'top 10%',scrub:1.4}});
   });
-}
+}catch(e){console.warn('section transitions:',e)}
 /* generative visuals */
 (function(){
   const R=(a,b)=>a+Math.random()*(b-a);

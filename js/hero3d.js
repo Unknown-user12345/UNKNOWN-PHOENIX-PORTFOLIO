@@ -3,7 +3,7 @@
 (function(){
   const hero=document.querySelector('.hero'),bg=hero&&hero.querySelector('.bg');
   if(!bg||!window.THREE)return;
-  const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const RM=!(window.SITE&&window.SITE.motion);
   const small=innerWidth<900,N=small?4500:9000;
 
   let renderer;

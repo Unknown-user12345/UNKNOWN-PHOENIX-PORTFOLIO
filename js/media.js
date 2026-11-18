@@ -4,7 +4,7 @@
 //   img/work-1.jpg ...   project covers, numbered in card order (sits behind the animated sketch)
 (function(){
   const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-  const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const RM=!(window.SITE&&window.SITE.motion);
   const hasGS=!!(window.gsap&&window.ScrollTrigger);
   const refresh=()=>hasGS&&ScrollTrigger.refresh();
   const load=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
